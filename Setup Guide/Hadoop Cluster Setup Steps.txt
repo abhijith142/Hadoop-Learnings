@@ -1,0 +1,156 @@
+Hadoop Cluster Creation Steps
+==================================
+
+Step - 1 : Install Java and Add JAVA_HOME
+	
+	1 Install Java
+		yum install java-1.8.0-openjdk-devel
+	2 Get Java Path
+		update-alternatives --config java
+	3 Set-up environment variable
+		vim .bash_profile
+		export JAVA_HOME={Java location}
+		source .bash_profile
+
+Step - 2 (Optional) : Create separate unix user accounts for Hadoop, HDFS, yarn and Mapreduce
+
+	1 Create User
+		adduser username
+		passwd username	
+		usermod -aG wheel username (wheel group has sudo permissions)
+	2 Create new Group
+		grouped groupname
+
+Step - 3 : Set hostname and resolution
+	
+	1 hostnamectl set-hostname master1.cluster1.com
+	2 Do the above step for all the slaves as well ex: slave1.cluster1.com
+	3 edit /etc/hosts and add entries as below
+		192.168.0.113 master1 master1.cluster1.com
+		192.168.0.114 slave1 slave1.cluster1.com
+		192.168.0.115 slave2 slave2.cluster1.com
+	4 Verify if the ping is working fine using the hostnames
+
+Step - 4 : Configure SSH
+
+	1 ssh-keygen
+	2 ssh-copy-id -i ~/.ssh/id-rsa.pub root@{ip}
+	3 Do the above two steps for all the machines
+
+Step - 5 : Download Hadoop
+
+	1 wget <hadoop mirror> (mirror can be obtained from apache.hadoop.org) ( Download under /usr/local ) 
+	2 Untar Hadoop
+		tar -xvf <hadoop-tar>
+	3 Create Softlink
+		ln -s hadoop-3.1.2 Hadoop
+	4 Add HADOOP_HOME env variable and add path
+		vim .bash_profile
+		export HADOOP_HOME=/usr/local/hadoop
+		export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+		source .bash_profile
+
+Step - 6 : Add Configurations
+
+	1 core-site.xml
+	
+		<configuration>
+        		<property>
+                		<name>fs.defaultFS</name>
+		                <value>hdfs://192.168.0.113:8020</value>
+        		</property>
+		</configuration>
+
+	2 hdfs-site.xml
+
+		<configuration>
+		        <property>
+                		<name>dfs.namenode.name.dir</name>
+		                <value>file:/home/hadoop_store/hdfs/namenode</value>
+		        </property>
+		        <property>
+		                <name>dfs.datanode.data.dir</name>
+						<value>file:/home/hadoop_store/hdfs/datanode</value>
+				</property>
+		</configuration>
+
+	3 mapred-site.xml
+	
+		<configuration>
+				<property>
+						<name>mapreduce.framework.name</name>
+						<value>yarn</value>
+				</property>
+				<property>
+						<name>yarn.app.mapreduce.am.env</name>
+						<value>HADOOP_MAPRED_HOME=/usr/local/hadoop</value>
+				</property>
+				<property>
+						<name>mapreduce.map.env</name>
+						<value>HADOOP_MAPRED_HOME=/usr/local/hadoop</value>
+				</property>
+				<property>
+						<name>mapreduce.reduce.env</name>
+						<value>HADOOP_MAPRED_HOME=/usr/local/hadoop</value>
+				</property>
+		</configuration>
+	
+	4 yarn-site.xml
+	
+		<configuration>
+
+		<!-- Site specific YARN configuration properties -->
+				<property>
+						<name>yarn.resourcemanager.address</name>
+						<value>192.168.0.113:8032</value>
+				</property>
+				<property>
+						<name>yarn.resourcemanager.scheduler.address</name>
+						<value>192.168.0.113:8030</value>
+				</property>
+				<property>
+						<name>yarn.resourcemanager.resource-tracker.address</name>
+						<value>192.168.0.113:8031</value>
+				</property>
+				<property>
+						<name>yarn.nodemanager.aux-services</name>
+						<value>mapreduce_shuffle</value>
+				</property>
+				<property>
+						<name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+						<value>org.apache.hadoop.mapred.ShuffleHandler</value>
+				</property>
+				<property>
+						<name>yarn.nodemanager.disk.health-checker.min-healthy-disks</name>
+						<value>0</value>
+				</property>
+		</configuration>
+		
+	5 hadoop-env.sh
+	
+		JAVA_HOME={java location}
+		HADOOP_HOME=/usr/local/hadoop
+		HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+		
+	6 workers
+	
+		IP for slave1
+		IP for slave2
+
+Step - 7 : push all the above configurations to all the machines
+
+Step - 8 : Disable firewall in all the machines
+
+		1. service firewalld stop
+		
+		
+Step - 9 : Start daemons in all the machine
+		
+		1. Go to master1 node and use start-all.sh
+		
+		
+Note: 
+	1. yarn node -list should give the list of all connected nodes to the master
+	2. 9870 - UI for NameNode
+	   8088 - UI for Yarn Resource Manager
+

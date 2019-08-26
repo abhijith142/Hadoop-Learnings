@@ -1,0 +1,5 @@
+org/learnings/hadoop/Demo.class
+org/learnings/hadoop/MaxTemperatureMapper$Temperature.class
+org/learnings/hadoop/MaxTemperatureReducer.class
+org/learnings/hadoop/MaxTemperatureMapper.class
+org/learnings/hadoop/NCDCRecordParser.class

@@ -1,0 +1,67 @@
+Installing Ambari on Centos
+===================================
+
+
+Step 1 - Set Up password less ssh
+	1) ssh-keygen
+	2) ssh-copy-id root@192.168.0.116
+	3) Do 1 & 2 for all the machines
+
+Step 2 - Enable NTP on cluster
+	1) yum instal -y ntp
+	2) systemctl enable ntpd
+	
+Step 3 - Add DNS entries
+	1) Edit Host File
+		- vi /etc/hosts
+		- add the entries as below
+		- 192.168.0.116 master1 master1.cluster2.com
+		- 192.168.0.117 slave1 slave1.cluster2.com
+		- 192.168.0.118 slave2 slave2.cluster2.com
+	2) Set Hostname
+		- hostnamectl set-hostname master1.cluster2.com
+		- Do the above for all the slaves
+	3) Edit network configuration file
+		- vi /etc/sysconfig/network
+		- NETWORKING=yes
+		- HOSTNAME=<fully.qualified.domain.name>
+		
+Step 4 - Disable iptables
+	1) systemctl disable firewalld
+	2) service firewalld stop
+	
+Step 5 - Disable SELinux packagekit
+	1) vi /etc/selinux/config
+	2) SELINUX=disabled
+	
+Step 6 - UMASK
+	1) echo umask 0022 >> /etc/profile
+	
+
+Step 7 - Install Ambari
+	1) get the Repo link from https://docs.hortonworks.com/HDPDocuments/Ambari-2.7.3.0/bk_ambari-installation/content/ambari_repositories.html
+	2) Download by using the command
+		- wget -nv http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.7.3.0/ambari.repo -O /etc/yum.repos.d/ambari.repo
+	3) yum install -y ambari-server
+	
+Step 8 - Setup Ambari
+	1) ambari-server setup
+	
+Step 9 - Configuring the cluster
+	1) Start Ambari Server
+		- ambari-server start
+		- ambari-server status
+	2) Log in to ambari server
+		- http://<ambari.server.ip>:8080
+	3) Launch Install wizard
+	4) Name your cluster and select version fo Hadoop
+	5) Install Options
+		- Enter Hosts by naming one FQDN per line
+		- Choose services
+		- Assign Master
+		- Assign slaves and clients
+		- Install, start and test
+		
+		
+Note: 
+1) Link for installation guide https://docs.hortonworks.com/HDPDocuments/Ambari-2.7.3.0/bk_ambari-installation/content/install_start_and_test.html
